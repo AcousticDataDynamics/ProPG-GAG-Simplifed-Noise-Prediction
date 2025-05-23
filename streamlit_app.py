@@ -54,20 +54,31 @@ def calculate_Lmax_est_F(Tc, m, h, T60, V, rho, hp, E, nu, sigma, g, rho_0, c0):
 
 # Streamlit App Setup
 st.set_page_config(layout="wide", page_title="ProPG GAG Noise Prediction", initial_sidebar_state="expanded")
+st.title("ProPG GAG Simplifed Noise Prediction")
 
-# Hide default Streamlit style padding
 st.markdown("""
     <style>
+        /* Remove Streamlit's default top padding */
         .block-container {
-            padding-top: 1rem;
+            padding-top: 2rem !important;
+        }
+
+        /* Remove padding in sidebar */
+        section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] {
+            padding-top: 0rem !important;
+        }
+
+        /* Hide the sidebar collapse (toggle) button */
+        section[data-testid="stSidebar"] div[data-testid="stSidebarHeader"] {
+            display: none !important;
         }
     </style>
 """, unsafe_allow_html=True)
 
-st.title("ProPG GAG Simplified Noise Prediction")
+
 
 with st.sidebar:
-    st.sidebar.title("Parameters")
+    st.sidebar.title("Parameter")
     col1, col2 = st.columns(2)
     with col1:
         m = st.number_input("Mass (kg)", value=35.0)
@@ -83,7 +94,7 @@ with st.sidebar:
 
     col3,col4 = st.columns(2)
     with col3:
-        Tc_start = st.number_input("Tc Start (ms)", value=1.0)
+        Tc_start = st.number_input("Tc Start (ms)", value=2.0)
     with col4:
         Tc_end = st.number_input("Tc End (ms)", value=7.0)
 
@@ -106,15 +117,17 @@ for Tc_ms in Tc_values:
         "Lmax (dB)": Lmax_spectrum,
         "Tc": f"{int(Tc_ms)} ms"
     }))
+    
 
 # Combine all spectra into one DataFrame
 spectra_df = pd.concat(Tc_spectra, ignore_index=True)
+
 
 # Plot all spectra with Altair
 chart = alt.Chart(spectra_df).mark_line().encode(
     x=alt.X("Frequency (Hz):Q", scale=alt.Scale(type="log", base=10, domain=[20, 2000]),
            axis=alt.Axis(values=list(f), labelExpr='datum.value + " Hz"', ticks=True, grid=True)),
-    y=alt.Y("Lmax (dB):Q", scale=alt.Scale(domainMin=50)),
+    y=alt.Y("Lmax (dB):Q", scale=alt.Scale(domainMin=30)),
     color=alt.Color("Tc:N", scale=alt.Scale(scheme="category20")),
     tooltip=["Frequency (Hz)", "Lmax (dB)", "Tc"]
 ).properties(
@@ -125,3 +138,45 @@ chart = alt.Chart(spectra_df).mark_line().encode(
 )
 
 st.altair_chart(chart, use_container_width=True)
+
+# Collect spectral results at each Tc
+spectra_rows = []
+
+for Tc_ms in Tc_values:
+    Tc_sec = Tc_ms / 1000
+    f, Lmax_spectrum, LAmax, fcut = calculate_Lmax_est_F(
+        Tc_sec, m, h, T60, V, rho, hp, E, nu, sigma, g, rho_0, c0
+    )
+    row = {f"{int(freq) if freq.is_integer() else freq} Hz": round(val, 1) for freq, val in zip(f, Lmax_spectrum)}
+    row["Tc"] = f"{int(Tc_ms)} ms"
+    row["LAmax (dB)"] = LAmax
+    row["fcut-off (Hz)"] = round(fcut, 1)
+    spectra_rows.append(row)
+
+# Convert to DataFrame
+spectra_table = pd.DataFrame(spectra_rows)
+
+# Sort frequency columns numerically
+freq_cols = [col for col in spectra_table.columns if "Hz" in col and "cut" not in col and "LAmax" not in col]
+freq_cols_sorted = sorted(freq_cols, key=lambda x: float(x.split()[0]))
+
+# Reorder columns: Tc, Frequencies..., LAmax, fcut-off
+ordered_cols = ["Tc"] + freq_cols_sorted + ["LAmax (dB)", "fcut-off (Hz)"]
+spectra_table = spectra_table[ordered_cols]
+
+# Display final table
+st.subheader("Spectral Results by Contact Time")
+st.dataframe(spectra_table, use_container_width=True, hide_index=True)
+
+# Convert the final table to CSV format
+csv = spectra_table.to_csv(index=False).encode("utf-8")
+
+# Display download button in the sidebar
+with st.sidebar:
+    st.markdown("---")
+    st.download_button(
+        label="⬇ Download Spectra Table as CSV",
+        data=csv,
+        file_name="ProPG_GAG_Simplifed_Noise_Predict_Results.csv",
+        mime="text/csv"
+    )
