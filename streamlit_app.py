@@ -75,33 +75,43 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-
-
 with st.sidebar:
-    st.sidebar.title("Parameter")
+    st.title("Input Parameters")
+
+    st.subheader("Step 1: Impact Parameters")
     col1, col2 = st.columns(2)
     with col1:
         m = st.number_input("Mass (kg)", value=35.0)
-        rho = st.number_input("Floor Density (kg/m³)", value=2300.0)
-        nu = st.number_input("Poisson Ratio (ν)", value=0.2)
-        T60 = st.number_input("Reverberation Time (s)", value=0.6)
     with col2:
         h = st.number_input("Drop Height (m)", value=1.0)
+
+    st.subheader("Step 2: Floor Properties")
+    col1, col2 = st.columns(2)
+    with col1:
+        rho = st.number_input("Floor Density (kg/m³)", value=2300.0)
+        nu = st.number_input("Poisson Ratio ν", value=0.2)
+    with col2:
         E = st.number_input("Young's Modulus (GPa)", value=30.0) * 1e9
-        sigma = st.number_input("Radiation Efficiency (σ)", value=1.0)
-        V = st.number_input("Room Volume (m³)", value=15.0)
         hp = st.number_input("Slab Thickness (mm)", value=250.0) / 1000
 
+    st.subheader("Step 3: Acoustic Properties")
+    col1, col2 = st.columns(2)
+    with col1:
+        T60 = st.number_input("Reverberation Time (s)", value=0.6)
+        rho_0 = st.number_input("Air Density (kg/m³)", value=1.21)
+        V = st.number_input("Room Volume (m³)", value=15.0)
+    with col2:
+        c0 = st.number_input("Speed of Sound (m/s)", value=343)
+        sigma = st.number_input("Radiation Efficiency", value=1.0)
+
+    st.subheader("Step 4: Contact")
     col3,col4 = st.columns(2)
     with col3:
         Tc_start = st.number_input("Tc Start (ms)", value=2.0)
     with col4:
         Tc_end = st.number_input("Tc End (ms)", value=7.0)
 
-    g = 9.81
-    c0 = 343
-    rho_0 = 1.21
-
+    g = 9.81  # Gravity constant (m/s²)
 
 # Loop over Tc range in 1ms steps
 Tc_values = np.arange(Tc_start, Tc_end + 1, 1)
@@ -127,13 +137,13 @@ spectra_df = pd.concat(Tc_spectra, ignore_index=True)
 chart = alt.Chart(spectra_df).mark_line().encode(
     x=alt.X("Frequency (Hz):Q", scale=alt.Scale(type="log", base=10, domain=[20, 2000]),
            axis=alt.Axis(values=list(f), labelExpr='datum.value + " Hz"', ticks=True, grid=True)),
-    y=alt.Y("Lmax (dB):Q", scale=alt.Scale(domainMin=30)),
+    y=alt.Y("Lmax (dB):Q", scale=alt.Scale(domainMin=45)),
     color=alt.Color("Tc:N", scale=alt.Scale(scheme="category20")),
     tooltip=["Frequency (Hz)", "Lmax (dB)", "Tc"]
 ).properties(
-    height=600,
+    height=500,
 ).configure_legend(
-    orient="bottom",
+    orient="top",
     title=None
 )
 
@@ -165,7 +175,6 @@ ordered_cols = ["Tc"] + freq_cols_sorted + ["LAmax (dB)", "fcut-off (Hz)"]
 spectra_table = spectra_table[ordered_cols]
 
 # Display final table
-st.subheader("Spectral Results by Contact Time")
 st.dataframe(spectra_table, use_container_width=True, hide_index=True)
 
 # Convert the final table to CSV format
