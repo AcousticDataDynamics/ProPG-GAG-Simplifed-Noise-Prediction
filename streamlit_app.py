@@ -135,10 +135,11 @@ spectra_df = pd.concat(Tc_spectra, ignore_index=True)
 
 # Plot all spectra with Altair
 chart = alt.Chart(spectra_df).mark_line().encode(
-    x=alt.X("Frequency (Hz):Q", scale=alt.Scale(type="log", base=10, domain=[20, 2000]),
+    x=alt.X("Frequency (Hz):Q",title="", scale=alt.Scale(type="log", base=10, domain=[20, 2000]),
            axis=alt.Axis(values=list(f), labelExpr='datum.value + " Hz"', ticks=True, grid=True)),
-    y=alt.Y("Lmax (dB):Q", scale=alt.Scale(domainMin=45)),
-    color=alt.Color("Tc:N", scale=alt.Scale(scheme="category20")),
+    y=alt.Y("Lmax (dB):Q",
+            scale=alt.Scale(domainMin=45)),
+    color=alt.Color("Tc:N", scale=alt.Scale(scheme="darkmulti")),
     tooltip=["Frequency (Hz)", "Lmax (dB)", "Tc"]
 ).properties(
     height=500,
