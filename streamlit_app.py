@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import altair as alt
 
-# Calculation function (unchanged)
+# ProPG GAG Calculation Function
 def calculate_Lmax_est_F(Tc, m, h, T60, V, rho, hp, E, nu, sigma, g, rho_0, c0):
 
     f = np.array([20, 25, 31.5, 40, 50, 63, 80, 100,
@@ -19,8 +19,8 @@ def calculate_Lmax_est_F(Tc, m, h, T60, V, rho, hp, E, nu, sigma, g, rho_0, c0):
     omega = 2 * np.pi * f
 
     # Step 1 - Establish force input
-    Fn = 2 * m * np.sqrt(2 * g * h)  # Magnitude of force
-    f2rms = (np.abs(Fn)**2 * B) / 2  # Spectral rms composition of force input
+    Fn = 2 * m * np.sqrt(2 * g * h)
+    f2rms = (np.abs(Fn)**2 * B) / 2
 
     # Step 2 - Determine power injection into floor
     Bp = (E * hp**3) / (12 * (1 - nu**2))
@@ -75,6 +75,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+#Streamlit Sidebar UI
 with st.sidebar:
     st.title("Input Parameters")
 
@@ -111,7 +112,7 @@ with st.sidebar:
     with col4:
         Tc_end = st.number_input("Tc End (ms)", value=7.0)
 
-    g = 9.81  # Gravity constant (m/s²)
+    g = 9.81
 
 # Loop over Tc range in 1ms steps
 Tc_values = np.arange(Tc_start, Tc_end + 1, 1)
