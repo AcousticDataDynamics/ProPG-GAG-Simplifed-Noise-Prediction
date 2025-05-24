@@ -1,19 +1,15 @@
-# 🎈 Blank app template
+## About This Tool
 
-A simple Streamlit app template for you to modify!
+This Streamlit app provides a **very simplified estimate** of the A-weighted maximum sound pressure level (LAFmax) in a room beneath a concrete slab when a heavy object is dropped on the floor above.  
+It models the problem with basic plate theory, a two-room energy balance, and simple A-weighting.  
+**It is intended for quick “what-if” exploration only**; for full guidance on good acoustic design practice, please refer to the *ProPG: Planning & Noise — Good Acoustic Design* (GAG) document.
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://blank-app-template.streamlit.app/)
+---
 
-### How to run it on your own machine
+## ⚠️ Disclaimer
 
-1. Install the requirements
-
-   ```
-   $ pip install -r requirements.txt
-   ```
-
-2. Run the app
-
-   ```
-   $ streamlit run streamlit_app.py
-   ```
+This software is supplied “as is”, with **no warranties or guarantees of accuracy or fitness for purpose**.  
+Results are approximate and omit many real-world factors (e.g. flanking transmission, structural damping, variable impact conditions).  
+**Use entirely at your own risk.**  
+The author accepts **no liability** for any loss, damage, or decisions made on the basis of these outputs.  
+Always seek advice from a suitably qualified acoustic professional and consult the *ProPG GAG* guide for detailed methodology and compliance requirements.
